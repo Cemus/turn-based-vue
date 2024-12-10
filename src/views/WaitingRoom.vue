@@ -26,41 +26,45 @@ const winner = ref(null)
 const areBothReady = ref(false)
 const isSocketReady = ref(false)
 
-const { socket, gameState } = useGameStore()
+const { socket, gameState, connectWebSocket } = useGameStore()
+
 console.log(socket)
 const connectToServer = () => {
   console.log('Tentative de connexion WebSocket...')
 
-  if (socket) {
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-      if (data.type === 'connected') {
-        playerId.value = data.playerId
-        isConnected.value = true
-        isSocketReady.value = true
-        console.log('Connecté au serveur WebSocket en tant que joueur', playerId.value)
-      } else if (data.type === 'update') {
-        /*         gameState.value = data.gameState
+  if (!socket) {
+    return
+  }
+  socket.onmessage = (event) => {
+    console.log(event)
+    const data = JSON.parse(event.data)
+    console.log(data)
+    if (data.type === 'connected') {
+      playerId.value = data.playerId
+      isConnected.value = true
+      isSocketReady.value = true
+      console.log('Connecté au serveur WebSocket en tant que joueur', playerId.value)
+    } else if (data.type === 'update') {
+      /*         gameState.value = data.gameState
         console.log(gameState.value) */
-      } else if (data.type === 'gameOver') {
-        gameOver.value = true
-        winner.value = data.winner
-      } else if (data.type === 'setReady') {
-        isReady.value = data.value
-      } else if (data.type === 'bothReady') {
-        router.push({ path: '/game' })
-      }
+    } else if (data.type === 'gameOver') {
+      gameOver.value = true
+      winner.value = data.winner
+    } else if (data.type === 'setReady') {
+      isReady.value = data.value
+    } else if (data.type === 'bothReady') {
+      router.push({ path: '/game' })
     }
+  }
 
-    socket.onerror = (error) => {
-      console.error('Erreur WebSocket :', error)
-    }
+  socket.onerror = (error) => {
+    console.error('Erreur WebSocket :', error)
+  }
 
-    socket.onclose = () => {
-      console.log('Déconnecté du serveur WebSocket.')
-      isConnected.value = false
-      isSocketReady.value = false
-    }
+  socket.onclose = () => {
+    console.log('Déconnecté du serveur WebSocket.')
+    isConnected.value = false
+    isSocketReady.value = false
   }
 }
 
@@ -82,6 +86,9 @@ const setReady = () => {
 }
 
 onMounted(() => {
+  if (!socket) {
+    connectWebSocket()
+  }
   connectToServer()
 })
 </script>

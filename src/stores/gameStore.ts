@@ -6,6 +6,7 @@ export const useGameStore = defineStore('gameStore', () => {
   const socketUrl: string = 'http://localhost:3000/'
   const socket = ref<WebSocket | null>(null)
   const gameState = ref<GameState | null>(null)
+
   const connectWebSocket = () => {
     socket.value = new WebSocket(socketUrl)
     socket.value.onopen = () => {
