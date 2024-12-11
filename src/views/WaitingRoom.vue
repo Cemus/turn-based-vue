@@ -2,8 +2,11 @@
   <main>
     <div v-if="isConnected">
       <h2>Connecté en tant que joueur {{ playerId }}</h2>
-      <button v-if="!isReady" type="button" @click="setReady">Appuyez pour commencer</button>
-      <p v-if="isReady && !areBothReady">En attente d'un joueur...</p>
+      <button v-if="!isReady" type="button" @click="toggleReady()">Appuyez pour commencer</button>
+      <div v-if="isReady && !areBothReady">
+        <p>En attente d'un joueur...</p>
+        <button type="button" @click="toggleReady()">Cancel</button>
+      </div>
     </div>
     <h2 v-else>Connexion en attente...</h2>
     <div v-if="gameState"></div>
@@ -14,16 +17,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, watchEffect } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useGameStore } from '@/stores/gameStore'
 import { storeToRefs } from 'pinia'
 
 const gameStore = useGameStore()
-const { socket, gameState, isConnected, playerId } = storeToRefs(gameStore)
-const isReady = ref(false)
+const { gameState, isConnected, playerId, isReady, areBothReady } = storeToRefs(gameStore)
 const gameOver = ref(false)
 const winner = ref(null)
-const areBothReady = ref(false)
+
+onMounted(() => {
+  connectToServer()
+})
 
 const connectToServer = () => {
   if (!isConnected.value) {
@@ -32,24 +37,11 @@ const connectToServer = () => {
   }
 }
 
-const setReady = () => {
-  const sckt = socket.value
-  const id = playerId.value
-  if (!sckt || !id) {
-    console.log('Pas de socket ou playerId non défini')
-    return
+const toggleReady = () => {
+  if (playerId.value) {
+    gameStore.toggleReady(playerId.value)
   }
-  const message = {
-    type: 'ready',
-    action: !isReady.value,
-    playerId: id,
-  }
-  sckt?.send(JSON.stringify(message))
 }
-
-onMounted(() => {
-  connectToServer()
-})
 
 // Check changements
 watch(

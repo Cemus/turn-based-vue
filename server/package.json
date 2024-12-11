@@ -1,0 +1,21 @@
+{
+  "name": "websocket-game",
+  "version": "1.0.0",
+  "description": "Un jeu multijoueur simple avec WebSocket",
+  "main": "server.ts",
+  "scripts": {
+    "start": "node server.ts"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.0.0"
+  },
+  "engines": {
+    "node": "16.x"
+  },
+  "author": "Kévin Lionnet",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.10.2"
+  }
+}
