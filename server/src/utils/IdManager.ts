@@ -1,9 +1,11 @@
-let currentId = 1;
+let currentId = 1
 
-export const getNewId = (): number => {
-  return currentId++;
-};
+const getNewId = (): number => {
+  return currentId++
+}
 
-export const resetIds = (): void => {
-  currentId = 1;
-};
+const resetIds = (): void => {
+  currentId = 1
+}
+
+export { getNewId, resetIds }

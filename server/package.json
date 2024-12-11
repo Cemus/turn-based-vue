@@ -7,8 +7,8 @@
     "start": "node server.ts"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "ws": "^8.0.0"
+    "express": "^4.21.2",
+    "ws": "^8.18.0"
   },
   "engines": {
     "node": "16.x"
@@ -16,6 +16,8 @@
   "author": "Kévin Lionnet",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^22.10.2"
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.2",
+    "@types/ws": "^8.5.13"
   }
 }

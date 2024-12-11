@@ -9,11 +9,7 @@
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "dist",
-    "types": ["node"],
-    "baseUrl": ".",
-    "paths": {
-      "*": ["node_modules/*", "/types/*"]
-    }
+    "types": ["node"]
   },
   "include": ["src/**/*"]
 }
