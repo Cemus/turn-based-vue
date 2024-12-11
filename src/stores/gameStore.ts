@@ -1,49 +1,53 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
 import { type GameState } from '@/types'
 
-export const useGameStore = defineStore('gameStore', () => {
-  const socketUrl: string = 'ws://localhost:3000/'
-  const socket = ref<WebSocket | null>(null)
-  const gameState = ref<GameState | null>(null)
-  const isConnected = ref<boolean>(false)
-  const playerId = ref<string | null>(null)
+interface State {
+  socketUrl: URL
+  socket: WebSocket | null
+  gameState: GameState | null
+  isConnected: Boolean
+  playerId: Number | null
+}
 
-  const connectWebSocket = () => {
-    if (socket.value) {
-      socket.value.close()
+export const useGameStore = defineStore('gameStore', {
+  state: (): State => {
+    return {
+      socketUrl: new URL('ws://localhost:3000/'),
+      socket: null,
+      gameState: null,
+      isConnected: false,
+      playerId: null,
     }
-
-    socket.value = new WebSocket(socketUrl)
-
-    socket.value.onopen = () => {
-      console.log('WebSocket connecté')
-      isConnected.value = true
-    }
-
-    socket.value.onerror = (error) => {
-      console.error('Erreur WebSocket :', error)
-      isConnected.value = false
-    }
-
-    socket.value.onclose = () => {
-      console.log('Déconnecté du WebSocket')
-      isConnected.value = false
-    }
-
-    socket.value.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-      if (data.type === 'connected') {
-        playerId.value = data.playerId
+  },
+  actions: {
+    connectWebSocket() {
+      if (this.socket) {
+        this.socket.close()
       }
-    }
-  }
 
-  return {
-    socket,
-    gameState,
-    isConnected,
-    playerId,
-    connectWebSocket,
-  }
+      this.socket = new WebSocket(this.socketUrl)
+
+      this.socket.onopen = () => {
+        console.log('Webthis.socket connecté')
+        this.isConnected = true
+      }
+
+      this.socket.onerror = (error: unknown) => {
+        console.error('Erreur Webthis.socket :', error)
+        this.isConnected = false
+      }
+
+      this.socket.onclose = () => {
+        console.log('Déconnecté du Webthis.socket')
+        this.isConnected = false
+      }
+
+      this.socket.onmessage = (event) => {
+        const data = JSON.parse(event.data)
+        if (data.type === 'connected') {
+          this.playerId = data.playerId
+        }
+      }
+    },
+  },
 })

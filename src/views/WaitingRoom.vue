@@ -14,35 +14,37 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, watchEffect } from 'vue'
 import { useGameStore } from '@/stores/gameStore'
-const { socket, gameState, isConnected, playerId, connectWebSocket } = useGameStore()
+import { storeToRefs } from 'pinia'
 
+const gameStore = useGameStore()
+const { socket, gameState, isConnected, playerId } = storeToRefs(gameStore)
 const isReady = ref(false)
 const gameOver = ref(false)
 const winner = ref(null)
 const areBothReady = ref(false)
 
 const connectToServer = () => {
-  if (!isConnected) {
-    console.log('Tentative de connexion WebSocket...')
-    connectWebSocket()
+  if (!isConnected.value) {
+    console.log('Tente de se connecter au serveur...')
+    gameStore.connectWebSocket()
   }
 }
 
 const setReady = () => {
-  if (!socket || !playerId) {
+  const sckt = socket.value
+  const id = playerId.value
+  if (!sckt || !id) {
     console.log('Pas de socket ou playerId non défini')
     return
   }
-
   const message = {
     type: 'ready',
     action: !isReady.value,
-    playerId: playerId,
+    playerId: id,
   }
-  socket.send(JSON.stringify(message))
-  console.log('Message "ready" envoyé au serveur')
+  sckt?.send(JSON.stringify(message))
 }
 
 onMounted(() => {
@@ -51,7 +53,7 @@ onMounted(() => {
 
 // Check changements
 watch(
-  () => isConnected,
+  () => isConnected.value,
   (newValue) => {
     if (newValue) {
       console.log('WebSocket connecté !')
