@@ -1,16 +1,18 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import TheGame from '@/views/GameRoom.vue'
-import GameContainer from '@/views/GameContainer.vue'
+import TheGame from '@/views/GameRoomView.vue'
+import GameContainer from '@/views/GameContainerView.vue'
+import DisconnectedView from '@/views/DisconnectedView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'home',
+      name: 'Home',
       component: GameContainer,
     },
-    { path: '/game', name: 'game', component: TheGame },
+    { path: '/game', name: 'Game', component: TheGame },
+    { path: '/disconnected', name: 'Disconnected', component: DisconnectedView },
   ],
 })
 

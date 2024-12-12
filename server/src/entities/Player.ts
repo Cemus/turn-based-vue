@@ -1,13 +1,15 @@
 import { WebSocket as WsType } from 'ws'
-import { getNewId } from '../utils/idManager'
+import { getNewId } from '../utils/IdManager'
 
 export default class Player {
   id: number
+  name: string | null
   connection: Connection
   stats: Stats
 
-  constructor(ws: WsType) {
+  constructor(name: string | null, ws: WsType) {
     this.id = getNewId()
+    this.name = name
     this.connection = new Connection(ws)
     this.stats = new Stats()
   }

@@ -1,7 +1,7 @@
 import WebSocket, { WebSocket as WsType } from 'ws'
 import { createServer } from 'http'
 import express, { Request, Response } from 'express'
-import { resetIds } from './src/utils/idManager'
+import { resetIds } from './src/utils/IdManager'
 import Player from './src/entities/Player'
 
 /* SERVEUR */
@@ -21,6 +21,7 @@ interface Message {
   value?: boolean
   gameState?: GameState
   winner?: number
+  playerName?: string
 }
 
 interface GameState {
@@ -30,7 +31,7 @@ interface GameState {
 
 const gameState: GameState = {
   players: [],
-  turn: 1,
+  turn: -1,
 }
 
 wss.on('connection', (ws: WsType) => {
@@ -40,15 +41,28 @@ wss.on('connection', (ws: WsType) => {
     return
   }
 
-  const player = new Player(ws)
-  const playerId = player.id
-  gameState.players.push(player)
-  console.log(`Joueur ${playerId} connecté.`)
-  ws.send(JSON.stringify({ type: 'connected', playerId }))
-
   ws.on('message', (message: string) => {
     const data: Message = JSON.parse(message)
 
+    if (data.type === 'setName') {
+      try {
+        const username = data.action
+
+        console.log(typeof username)
+        console.log(data)
+        if (typeof username === 'string') {
+          const player = new Player(username, ws)
+          const playerId = player.id
+          gameState.players.push(player)
+          console.log(`Joueur ${playerId} (${username}) connecté.`)
+          ws.send(JSON.stringify({ type: 'connected', playerId: playerId, gameState: gameState }))
+        } else {
+          throw new Error('Mauvais type de donnée ?')
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    }
     if (data.type === 'ready') {
       const player = gameState.players.find((p) => p.id === data.playerId)
       if (player) {
@@ -67,7 +81,10 @@ wss.on('connection', (ws: WsType) => {
           broadcast({
             type: 'setBothReady',
             value: true,
-            gameState: gameState,
+            gameState: {
+              ...gameState,
+              turn: Math.floor(Math.random() * gameState.players.length),
+            },
           })
           console.log(gameState)
         }
@@ -104,7 +121,8 @@ wss.on('connection', (ws: WsType) => {
           return
         }
 
-        gameState.turn = gameState.turn === 1 ? 2 : 1
+        gameState.turn =
+          gameState.turn + 1 <= gameState.players.length ? gameState.turn++ : (gameState.turn = 0)
 
         broadcast({ type: 'update', gameState: gameState })
       }
@@ -114,14 +132,17 @@ wss.on('connection', (ws: WsType) => {
   ws.on('close', () => {
     const index = gameState.players.findIndex((p) => p.getWs() === ws)
     if (index !== -1) {
-      console.log(`Joueur ${gameState.players[index].id} déconnecté.`)
-      gameState.players.splice(index, 1)
-      resetGame()
+      console.log(
+        `Joueur ${gameState.players[index].id} (${gameState.players[index].name}) déconnecté.`,
+      )
+
       broadcast({
         type: 'playerDisconnected',
         playerId: gameState.players[index].id,
       })
+      gameState.players.splice(index, 1)
     }
+    resetGame()
   })
 })
 
@@ -132,7 +153,7 @@ function broadcast(data: Message) {
 
 function resetGame() {
   gameState.players = []
-  gameState.turn = 1
+  gameState.turn = -1
   resetIds()
 }
 

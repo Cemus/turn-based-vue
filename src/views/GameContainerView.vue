@@ -1,13 +1,13 @@
 <template>
-  <WaitingRoom v-if="!areBothReady" />
-  <TheGame v-if="areBothReady" />
+  <WaitingRoomView v-if="!areBothReady" />
+  <TheGameView v-if="areBothReady" />
 </template>
 
 <script setup lang="ts">
 import { useGameStore } from '@/stores/gameStore'
 import { storeToRefs } from 'pinia'
-import WaitingRoom from './WaitingRoom.vue'
-import TheGame from './GameRoom.vue'
+import WaitingRoomView from './WaitingRoomView.vue'
+import TheGameView from './GameRoomView.vue'
 
 const gameStore = useGameStore()
 const { areBothReady } = storeToRefs(gameStore)

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { type GameState } from '@/types'
+import router from '@/router'
 
 interface State {
   socketUrl: URL
@@ -24,7 +25,7 @@ export const useGameStore = defineStore('gameStore', {
     }
   },
   actions: {
-    connectWebSocket() {
+    connectWebSocket(username: string) {
       if (this.socket) {
         this.socket.close()
       }
@@ -32,8 +33,12 @@ export const useGameStore = defineStore('gameStore', {
       this.socket = new WebSocket(this.socketUrl)
 
       this.socket.onopen = () => {
-        console.log('Webthis.socket connecté')
-        this.isConnected = true
+        const message = {
+          type: 'setName',
+          action: username,
+        }
+
+        this.socket?.send(JSON.stringify(message))
       }
 
       this.socket.onerror = (error: unknown) => {
@@ -50,10 +55,9 @@ export const useGameStore = defineStore('gameStore', {
         const data = JSON.parse(event.data)
         switch (data.type) {
           case 'connected':
+            this.gameState = data.gameState
             this.playerId = data.playerId
-            break
-          case 'toggleReady':
-            this.isReady = data.value
+            this.isConnected = true
             break
           case 'toggleReady':
             this.isReady = data.value
@@ -63,9 +67,24 @@ export const useGameStore = defineStore('gameStore', {
             this.gameState = data.gameState
             console.log(this.gameState)
             break
+          case 'playerDisconnected':
+            this.reset()
+            router.push('./disconnected')
+            this.socket?.close()
+            break
         }
       }
     },
+
+    reset() {
+      this.socket = null
+      this.gameState = null
+      this.playerId = null
+      this.isConnected = false
+      this.isReady = false
+      this.areBothReady = false
+    },
+
     toggleReady(playerId: Number) {
       if (!this.socket || !playerId) {
         console.log('Pas de socket ou playerId non défini')
@@ -78,7 +97,21 @@ export const useGameStore = defineStore('gameStore', {
       }
       this.socket?.send(JSON.stringify(message))
     },
+
+    attack(playerId: number) {
+      if (!this.socket || !playerId) {
+        console.log('Pas de socket ou playerId non défini')
+        return
+      }
+      const message = {
+        type: 'action',
+        action: 'attack',
+        playerId: playerId,
+      }
+      this.socket?.send(JSON.stringify(message))
+    },
   },
+
   getters: {
     getCurrentPlayer(state) {
       return state.gameState?.players.find((player) => player.id === state.playerId) || null

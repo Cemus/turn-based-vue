@@ -1,13 +1,19 @@
 export interface Player {
   id: number
+  name: string
   ws: WebSocket
   ready: boolean
-  hp: number
+  stats: Stats
 }
 
 export interface GameState {
-  id: number
   players: Player[]
-  player: Player
   turn: number
+}
+
+interface Stats {
+  hp: number
+  atk: number
+  def: number
+  mag: number
 }
