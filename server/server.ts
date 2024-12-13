@@ -1,7 +1,8 @@
 import WebSocket, { WebSocket as WsType } from 'ws'
 import { createServer } from 'http'
 import express, { Request, Response } from 'express'
-import { resetIds } from './src/utils/IdManager'
+import { resetIds } from './src/utils/idManager'
+
 import Player from './src/entities/Player'
 
 /* SERVEUR */
@@ -29,7 +30,7 @@ interface GameState {
   turn: number
 }
 
-const gameState: GameState = {
+let gameState: GameState = {
   players: [],
   turn: -1,
 }
@@ -48,8 +49,6 @@ wss.on('connection', (ws: WsType) => {
       try {
         const username = data.action
 
-        console.log(typeof username)
-        console.log(data)
         if (typeof username === 'string') {
           const player = new Player(username, ws)
           const playerId = player.id
@@ -60,7 +59,7 @@ wss.on('connection', (ws: WsType) => {
           throw new Error('Mauvais type de donnée ?')
         }
       } catch (error) {
-        console.log(error)
+        console.error(error)
       }
     }
     if (data.type === 'ready') {
@@ -78,15 +77,14 @@ wss.on('connection', (ws: WsType) => {
           gameState.players[0].getReadiness() &&
           gameState.players[1].getReadiness()
         ) {
+          const turn = Math.floor(Math.random() * (gameState.players.length - 1) + 1)
+          gameState = { ...gameState, turn }
+          console.log('turn', turn)
           broadcast({
             type: 'setBothReady',
             value: true,
-            gameState: {
-              ...gameState,
-              turn: Math.floor(Math.random() * gameState.players.length),
-            },
+            gameState,
           })
-          console.log(gameState)
         }
       }
     }
@@ -94,6 +92,7 @@ wss.on('connection', (ws: WsType) => {
     if (data.type === 'action') {
       const player = gameState.players.find((p) => p.id === data.playerId)
       if (player) {
+        console.log(gameState.turn, data.playerId)
         if (gameState.turn !== player.id) {
           ws.send(
             JSON.stringify({
@@ -106,13 +105,14 @@ wss.on('connection', (ws: WsType) => {
 
         if (data.action === 'attack') {
           const target = gameState.players.find((p) => p.id !== player.id)
+          console.log(target)
           if (target) {
             target.stats.hp -= Math.floor(Math.random() * 20) + 10
           }
         } else if (data.action === 'heal') {
           player.stats.hp += Math.floor(Math.random() * 15) + 5
         }
-
+        console.log(player)
         if (gameState.players[0].stats.hp <= 0 || gameState.players[1].stats.hp <= 0) {
           const winner =
             gameState.players[0].stats.hp > 0 ? gameState.players[0].id : gameState.players[1].id
@@ -147,7 +147,6 @@ wss.on('connection', (ws: WsType) => {
 })
 
 function broadcast(data: Message) {
-  console.log('gameState.players', gameState.players)
   gameState.players.forEach((player) => player.getWs().send(JSON.stringify(data)))
 }
 

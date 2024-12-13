@@ -1,5 +1,5 @@
 import { WebSocket as WsType } from 'ws'
-import { getNewId } from '../utils/IdManager'
+import { getNewId } from '../utils/idManager'
 
 export default class Player {
   id: number
@@ -28,6 +28,15 @@ export default class Player {
 
   toggleReadiness() {
     this.connection.toggleReadiness()
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      stats: this.stats.getStats(),
+      isReady: this.connection.getReadiness(),
+    }
   }
 }
 

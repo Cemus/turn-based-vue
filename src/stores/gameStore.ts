@@ -6,10 +6,10 @@ interface State {
   socketUrl: URL
   socket: WebSocket | null
   gameState: GameState | null
-  playerId: Number | null
-  isConnected: Boolean
-  isReady: Boolean
-  areBothReady: Boolean
+  playerId: number | null
+  isConnected: boolean
+  isReady: boolean
+  areBothReady: boolean
 }
 
 export const useGameStore = defineStore('gameStore', {
@@ -47,8 +47,8 @@ export const useGameStore = defineStore('gameStore', {
       }
 
       this.socket.onclose = () => {
-        console.log('Déconnecté du Webthis.socket')
-        this.isConnected = false
+        router.push('./disconnected')
+        this.socket?.close()
       }
 
       this.socket.onmessage = (event) => {
@@ -65,13 +65,20 @@ export const useGameStore = defineStore('gameStore', {
           case 'setBothReady':
             this.areBothReady = data.value
             this.gameState = data.gameState
+            break
+
+          case 'update':
+            this.gameState = data.gameState
             console.log(this.gameState)
+            console.log('up^date')
             break
           case 'playerDisconnected':
             this.reset()
             router.push('./disconnected')
             this.socket?.close()
             break
+          case 'error':
+            console.warn(data.message)
         }
       }
     },
@@ -85,7 +92,7 @@ export const useGameStore = defineStore('gameStore', {
       this.areBothReady = false
     },
 
-    toggleReady(playerId: Number) {
+    toggleReady(playerId: number) {
       if (!this.socket || !playerId) {
         console.log('Pas de socket ou playerId non défini')
         return
