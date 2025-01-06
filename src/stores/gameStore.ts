@@ -110,6 +110,7 @@ export const useGameStore = defineStore('gameStore', {
         console.log('Pas de socket ou playerId non défini')
         return
       }
+      console.log('attaque gamestore')
       const message = {
         type: 'action',
         action: 'attack',

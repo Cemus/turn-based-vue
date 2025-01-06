@@ -90,9 +90,9 @@ wss.on('connection', (ws: WsType) => {
     }
 
     if (data.type === 'action') {
+      console.log('ACTION !')
       const player = gameState.players.find((p) => p.id === data.playerId)
       if (player) {
-        console.log(gameState.turn, data.playerId)
         if (gameState.turn !== player.id) {
           ws.send(
             JSON.stringify({
@@ -104,15 +104,16 @@ wss.on('connection', (ws: WsType) => {
         }
 
         if (data.action === 'attack') {
+          console.log('ATTAQUE!')
           const target = gameState.players.find((p) => p.id !== player.id)
-          console.log(target)
           if (target) {
             target.stats.hp -= Math.floor(Math.random() * 20) + 10
           }
         } else if (data.action === 'heal') {
           player.stats.hp += Math.floor(Math.random() * 15) + 5
         }
-        console.log(player)
+
+        // Check winner
         if (gameState.players[0].stats.hp <= 0 || gameState.players[1].stats.hp <= 0) {
           const winner =
             gameState.players[0].stats.hp > 0 ? gameState.players[0].id : gameState.players[1].id
@@ -121,8 +122,8 @@ wss.on('connection', (ws: WsType) => {
           return
         }
 
-        gameState.turn =
-          gameState.turn + 1 <= gameState.players.length ? gameState.turn++ : (gameState.turn = 0)
+        changeTurn(gameState)
+        console.log('new, new turn confirmed', gameState.turn)
 
         broadcast({ type: 'update', gameState: gameState })
       }
@@ -146,6 +147,13 @@ wss.on('connection', (ws: WsType) => {
   })
 })
 
+function changeTurn(gameState: GameState) {
+  console.log('oldturn', gameState.turn)
+  console.log('player length', gameState.players.length)
+  const newTurn = gameState.turn + 1 == gameState.players.length ? gameState.turn + 1 : 1
+  gameState.turn = newTurn
+  console.log('newturn', newTurn)
+}
 function broadcast(data: Message) {
   gameState.players.forEach((player) => player.getWs().send(JSON.stringify(data)))
 }

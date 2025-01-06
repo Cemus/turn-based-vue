@@ -24,9 +24,11 @@ import { storeToRefs } from 'pinia'
 import { watch } from 'vue'
 
 const gameStore = useGameStore()
-const { gameState } = storeToRefs(gameStore)
-const currentPlayer = gameStore.getCurrentPlayer
+let { gameState } = storeToRefs(gameStore)
+let currentPlayer = gameStore.getCurrentPlayer
+
 console.log(currentPlayer?.name)
+console.log('curr pla', currentPlayer)
 
 console.log(gameState.value)
 console.log(gameState.value?.players[gameState.value?.turn].name)
@@ -47,10 +49,10 @@ const attack = () => {
 
   //Ici
   watch(
-    [gameState, playerId],
+    [gameState],
     () => {
-      if (gameState.value && playerId.value) {
-        currentPlayer.value = gameStore.getCurrentPlayer
+      if (gameState) {
+        currentPlayer = gameStore.getCurrentPlayer
       }
     },
     { immediate: true },
