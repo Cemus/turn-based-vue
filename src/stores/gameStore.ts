@@ -10,6 +10,7 @@ interface State {
   isConnected: boolean
   isReady: boolean
   areBothReady: boolean
+  log: string[]
 }
 
 export const useGameStore = defineStore('gameStore', {
@@ -22,6 +23,7 @@ export const useGameStore = defineStore('gameStore', {
       isConnected: false,
       isReady: false,
       areBothReady: false,
+      log: [],
     }
   },
   actions: {
@@ -69,8 +71,9 @@ export const useGameStore = defineStore('gameStore', {
 
           case 'update':
             this.gameState = data.gameState
-            console.log(this.gameState)
-            console.log('up^date')
+            if (data.logMessage) {
+              this.log.push(data.logMessage)
+            }
             break
           case 'playerDisconnected':
             this.reset()

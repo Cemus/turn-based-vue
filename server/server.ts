@@ -1,8 +1,7 @@
 import WebSocket, { WebSocket as WsType } from 'ws'
 import { createServer } from 'http'
 import express, { Request, Response } from 'express'
-import { resetIds } from './src/utils/idManager'
-
+import { resetIds } from './src/utils/IdManager'
 import Player from './src/entities/Player'
 
 /* SERVEUR */
@@ -23,16 +22,19 @@ interface Message {
   gameState?: GameState
   winner?: number
   playerName?: string
+  logMessage?: string
 }
 
 interface GameState {
   players: Player[]
   turn: number
+  winner: number
 }
 
 let gameState: GameState = {
   players: [],
   turn: -1,
+  winner: -1,
 }
 
 wss.on('connection', (ws: WsType) => {
@@ -92,6 +94,8 @@ wss.on('connection', (ws: WsType) => {
     if (data.type === 'action') {
       console.log('ACTION !')
       const player = gameState.players.find((p) => p.id === data.playerId)
+      let logMessage = ''
+
       if (player) {
         if (gameState.turn !== player.id) {
           ws.send(
@@ -105,27 +109,29 @@ wss.on('connection', (ws: WsType) => {
 
         if (data.action === 'attack') {
           console.log('ATTAQUE!')
+
           const target = gameState.players.find((p) => p.id !== player.id)
+
           if (target) {
-            target.stats.hp -= Math.floor(Math.random() * 20) + 10
+            const damages = Math.floor(Math.random() * 20) + 10
+            target.stats.hp -= damages
+            logMessage = `${player.name} frappe ${target.name} pour ${damages} !`
           }
         } else if (data.action === 'heal') {
-          player.stats.hp += Math.floor(Math.random() * 15) + 5
+          const healPower = Math.floor(Math.random() * 15) + 5
+          player.stats.hp += healPower
+          logMessage = `${player.name} se soigne pour ${healPower} !`
         }
 
         // Check winner
         if (gameState.players[0].stats.hp <= 0 || gameState.players[1].stats.hp <= 0) {
           const winner =
             gameState.players[0].stats.hp > 0 ? gameState.players[0].id : gameState.players[1].id
-          broadcast({ type: 'gameOver', winner })
-          resetGame()
-          return
+          gameState.winner = winner
         }
-
         changeTurn(gameState)
-        console.log('new, new turn confirmed', gameState.turn)
 
-        broadcast({ type: 'update', gameState: gameState })
+        broadcast({ type: 'update', gameState: gameState, logMessage: logMessage })
       }
     }
   })
@@ -161,6 +167,7 @@ function broadcast(data: Message) {
 function resetGame() {
   gameState.players = []
   gameState.turn = -1
+  gameState.winner = -1
   resetIds()
 }
 

@@ -1,5 +1,5 @@
 import { WebSocket as WsType } from 'ws'
-import { getNewId } from '../utils/idManager'
+import { getNewId } from '../utils/IdManager'
 
 export default class Player {
   id: number

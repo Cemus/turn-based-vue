@@ -9,6 +9,7 @@ export interface Player {
 export interface GameState {
   players: Player[]
   turn: number
+  winner: number
 }
 
 interface Stats {

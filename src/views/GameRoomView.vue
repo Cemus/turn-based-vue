@@ -5,16 +5,20 @@
       <p>
         Vous êtes {{ currentPlayer.name }},
         {{
-          currentPlayer.name === getPlayerWhoseTurnItIs()
+          isMyTurn()
             ? `C'est à votre tour !`
             : `C'est au tour de
          ${getPlayerWhoseTurnItIs()}...`
         }}
       </p>
-      <p>Vos HP: {{ currentPlayer?.stats.hp }}</p>
-      <p>Tour actuel: {{ gameState.turn }}</p>
+      <p v-for="player in gameState.players">{{ player.name }} HP : {{ player.stats.hp }}</p>
     </div>
-    <button v-if="currentPlayer" type="button" @click="attack()">Attack</button>
+    <button v-if="isMyTurn() && gameState?.winner === -1" type="button" @click="attack()">
+      Attack
+    </button>
+    <h2>Log</h2>
+    <p v-if="gameState?.winner === -1" v-for="message in log">{{ message }}</p>
+    <p v-else>WINNER {{ gameState?.players[gameState.winner].name }}</p>
   </main>
 </template>
 
@@ -24,7 +28,7 @@ import { storeToRefs } from 'pinia'
 import { watch } from 'vue'
 
 const gameStore = useGameStore()
-let { gameState } = storeToRefs(gameStore)
+let { gameState, log } = storeToRefs(gameStore)
 let currentPlayer = gameStore.getCurrentPlayer
 
 console.log(currentPlayer?.name)
@@ -39,6 +43,10 @@ const getPlayerWhoseTurnItIs = () => {
     return player ? player.name : 'Inconnu'
   }
   return 'Inconnu'
+}
+
+const isMyTurn = () => {
+  return getPlayerWhoseTurnItIs() === currentPlayer?.name
 }
 const attack = () => {
   console.log(currentPlayer)
