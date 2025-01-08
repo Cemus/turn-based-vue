@@ -35,12 +35,6 @@ const gameStore = useGameStore()
 let { gameState, log } = storeToRefs(gameStore)
 let currentPlayer = gameStore.getCurrentPlayer
 
-console.log(currentPlayer?.name)
-console.log('curr pla', currentPlayer)
-
-console.log(gameState.value)
-console.log(gameState.value?.players[gameState.value?.turn].name)
-
 const getPlayerWhoseTurnItIs = () => {
   if (gameState.value && gameState.value.players) {
     const player = gameState.value.players.find((player) => player.id === gameState.value?.turn)
@@ -53,9 +47,7 @@ const isMyTurn = () => {
   return getPlayerWhoseTurnItIs() === currentPlayer?.name
 }
 const attack = () => {
-  console.log(currentPlayer)
   if (currentPlayer) {
-    console.log(currentPlayer.id)
     gameStore.attack(currentPlayer.id)
   }
 
