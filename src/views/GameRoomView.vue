@@ -18,7 +18,11 @@
     </button>
     <h2>Log</h2>
     <p v-if="gameState?.winner === -1" v-for="message in log">{{ message }}</p>
-    <p v-else>WINNER {{ gameState?.players[gameState.winner].name }}</p>
+    <div v-else>
+      <p>Le duel est terminé !</p>
+      <p>Vainqueur : {{ gameState?.players[gameState.winner].name }}</p>
+      <p>{{ `Tu as ${gameState?.winner === currentPlayer?.id ? 'gagné !' : 'perdu...'}` }}</p>
+    </div>
   </main>
 </template>
 
